@@ -6,7 +6,7 @@
   <title>סידור פיננסי | ליווי טכני ממוקד למשפחות</title>
   <meta name="description" content="ליווי טכני ממוקד לסידור הפנסיה ואופטימיזציה של החיסכון המשפחתי. פגישת זום אחת של 45 דקות." />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.js"></script>
   <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -102,7 +102,7 @@
       <h1 class="fade-in text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
         פגישת עבודה של 45 דקות<br>
         <span class="text-accent">ששווה למשפחה שלכם</span><br>
-        <span class="text-accent">מאות אלפי שקלים בעתיד</span>
+        <span class="text-accent">מאות. אלפי. שקלים.</span>
       </h1>
       <p class="fade-in text-base sm:text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
         בלי ללמוד את השוק ובלי בירוקרטיה.<br class="hidden sm:block">
@@ -768,11 +768,13 @@
   </footer>
 
   <script>
-    // Init Lucide icons
+    // ─── Scroll to top on load (fix mobile landing position) ───
+    window.scrollTo(0, 0);
+
+    // ─── Init Lucide icons ───
     try { lucide.createIcons(); } catch(e) { console.warn('Lucide failed:', e); }
 
     // ─── Intersection Observer for fade-in (progressive enhancement) ───
-    // Elements are visible by default. Only add animation class if observer is supported.
     try {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry, i) => {
@@ -825,30 +827,343 @@
     });
 
     // ─── Counter animation ───
-    const counterObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          const target = parseInt(el.dataset.target);
-          const isInline = el.classList.contains('counter-inline');
-          const duration = 2000;
-          const start = Date.now();
-          const tick = () => {
-            const elapsed = Date.now() - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const current = Math.round(target * eased).toLocaleString('he-IL');
-            el.textContent = isInline ? `+₪${current}` : `₪${current}`;
-            if (progress < 1) requestAnimationFrame(tick);
-          };
-          tick();
-          counterObserver.unobserve(el);
-        }
-      });
-    }, { threshold: 0.3 });
-    document.querySelectorAll('.counter, .counter-inline').forEach(el => counterObserver.observe(el));
+    function animateCounter(el) {
+      const target = parseInt(el.dataset.target);
+      if (!target) return;
+      const isInline = el.classList.contains('counter-inline');
+      const duration = 2000;
+      const start = Date.now();
+      const tick = () => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(target * eased).toLocaleString('he-IL');
+        el.textContent = isInline ? `+₪${current}` : `₪${current}`;
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    let countersAnimated = false;
+    function runCounters() {
+      if (countersAnimated) return;
+      countersAnimated = true;
+      document.querySelectorAll('.counter, .counter-inline').forEach(el => animateCounter(el));
+    }
+
+    try {
+      const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            runCounters();
+            counterObserver.disconnect();
+          }
+        });
+      }, { threshold: 0.2 });
+      const mathSection = document.getElementById('math');
+      if (mathSection) counterObserver.observe(mathSection);
+    } catch(e) { /* fallback below */ }
+
+    // Fallback: if counters haven't fired after 2 seconds, run them
+    setTimeout(() => { runCounters(); }, 2000);
 
     // ─── DRAWER: מי אני ───
     function openAbout() {
       document.getElementById('about-drawer').classList.add('open');
-      document.getElementById('about-overlay').cl
+      document.getElementById('about-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeAbout() {
+      document.getElementById('about-drawer').classList.remove('open');
+      document.getElementById('about-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function openAboutFromMobile() {
+      document.getElementById('mobile-nav').classList.add('hidden');
+      document.getElementById('mobile-nav').classList.remove('flex');
+      openAbout();
+    }
+
+    // ─── FAQ accordion ───
+    document.querySelectorAll('.faq-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-icon');
+        const isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
+
+        // Close all others
+        document.querySelectorAll('.faq-item').forEach(other => {
+          if (other !== item) {
+            const otherAnswer = other.querySelector('.faq-answer');
+            const otherIcon = other.querySelector('.faq-icon');
+            otherAnswer.style.maxHeight = '0px';
+            if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        // Toggle current
+        if (isOpen) {
+          answer.style.maxHeight = '0px';
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        } else {
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // ─── MODAL: מסלקה ───
+    function openMslakaModal() {
+      const overlay = document.getElementById('mslaka-overlay');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMslakaModal(e) {
+      if (e && e.target && e.target.id !== 'mslaka-overlay' && e.type === 'click') return;
+      const overlay = document.getElementById('mslaka-overlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    // ─── Calculator logic ───
+    const cpState = { kids: null, age: null, pension: null, salary1: null, salary2: null, history: ['intro'] };
+
+    function cpGo(step) {
+      cpState.history.push(step);
+      showStep(step);
+    }
+
+    function cpBack() {
+      if (cpState.history.length <= 1) return;
+      cpState.history.pop();
+      const prev = cpState.history[cpState.history.length - 1];
+      showStep(prev);
+    }
+
+    function showStep(step) {
+      ['cs-intro','cs-q1','cs-q2','cs-q3','cs-q4','cs-results'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      const progress = document.getElementById('cp-progress');
+      const backBtn = document.getElementById('cp-back');
+
+      if (step === 'intro') {
+        document.getElementById('cs-intro').classList.remove('hidden');
+        progress.classList.add('hidden');
+        backBtn.classList.add('hidden');
+      } else if (step === 'q1') {
+        document.getElementById('cs-q1').classList.remove('hidden');
+        updateProgress(1, 'שאלה 1 מתוך 4');
+        backBtn.classList.remove('hidden');
+      } else if (step === 'q2') {
+        document.getElementById('cs-q2').classList.remove('hidden');
+        updateProgress(2, 'שאלה 2 מתוך 4');
+        backBtn.classList.remove('hidden');
+      } else if (step === 'q3') {
+        document.getElementById('cs-q3').classList.remove('hidden');
+        updateProgress(3, 'שאלה 3 מתוך 4');
+        backBtn.classList.remove('hidden');
+      } else if (step === 'q4') {
+        buildSalaryStep();
+        document.getElementById('cs-q4').classList.remove('hidden');
+        updateProgress(4, 'שאלה 4 מתוך 4');
+        backBtn.classList.remove('hidden');
+      } else if (step === 'results') {
+        cpShowResults();
+        progress.classList.add('hidden');
+        backBtn.classList.add('hidden');
+      }
+    }
+
+    function updateProgress(step, label) {
+      const progress = document.getElementById('cp-progress');
+      progress.classList.remove('hidden');
+      document.getElementById('cp-step-label').textContent = label;
+      document.getElementById('cp-bar').style.width = (step / 4 * 100) + '%';
+    }
+
+    function cpSelect(key, value, next) {
+      cpState[key] = value;
+      // Highlight selected button
+      const group = document.querySelectorAll('.co-' + key.replace(/[0-9]/g, ''));
+      if (key === 'kids') document.querySelectorAll('.co-kids').forEach(b => b.classList.remove('calc-selected'));
+      if (key === 'age') document.querySelectorAll('.co-age').forEach(b => b.classList.remove('calc-selected'));
+      if (key === 'pension') document.querySelectorAll('.co-pension').forEach(b => b.classList.remove('calc-selected'));
+      event.currentTarget.classList.add('calc-selected');
+
+      if (next === 'results') {
+        cpState.history.push('results');
+        setTimeout(() => cpShowResults(), 300);
+      } else {
+        setTimeout(() => cpGo(next), 300);
+      }
+    }
+
+    function buildSalaryStep() {
+      const wrap = document.getElementById('cp-salary-wrap');
+      const pension = cpState.pension;
+      const btnWrap = document.getElementById('cp-q4-btn');
+
+      const salaryOptions = [
+        { value: 'low', label: 'עד 10,000', sub: 'ש״ח ברוטו' },
+        { value: 'mid', label: '10,000–20,000', sub: 'ש״ח ברוטו' },
+        { value: 'high', label: '20,000–35,000', sub: 'ש״ח ברוטו' },
+        { value: 'vhigh', label: '35,000+', sub: 'ש״ח ברוטו' }
+      ];
+
+      if (pension === 'both') {
+        wrap.innerHTML = `
+          <h3 class="text-xl md:text-2xl font-bold mb-2 text-center">מה המשכורת של כל אחד מכם?</h3>
+          <p class="text-muted text-sm text-center mb-6">בן/בת זוג ראשון/ה</p>
+          <div class="grid grid-cols-2 gap-3 mb-8" id="salary1-grid">
+            ${salaryOptions.map(o => `<button class="calc-opt co-sal1" data-value="${o.value}" onclick="cpSelectSalary('salary1','${o.value}',this)"><span class="block text-lg font-bold mb-1">${o.label}</span><span class="block text-xs text-muted">${o.sub}</span></button>`).join('')}
+          </div>
+          <p class="text-muted text-sm text-center mb-6">בן/בת זוג שני/ה</p>
+          <div class="grid grid-cols-2 gap-3" id="salary2-grid">
+            ${salaryOptions.map(o => `<button class="calc-opt co-sal2" data-value="${o.value}" onclick="cpSelectSalary('salary2','${o.value}',this)"><span class="block text-lg font-bold mb-1">${o.label}</span><span class="block text-xs text-muted">${o.sub}</span></button>`).join('')}
+          </div>
+        `;
+      } else {
+        wrap.innerHTML = `
+          <h3 class="text-xl md:text-2xl font-bold mb-2 text-center">מה המשכורת ברוטו?</h3>
+          <p class="text-muted text-sm text-center mb-8">של בן/בת הזוג השכיר/ה</p>
+          <div class="grid grid-cols-2 gap-3" id="salary1-grid">
+            ${salaryOptions.map(o => `<button class="calc-opt co-sal1" data-value="${o.value}" onclick="cpSelectSalary('salary1','${o.value}',this)"><span class="block text-lg font-bold mb-1">${o.label}</span><span class="block text-xs text-muted">${o.sub}</span></button>`).join('')}
+          </div>
+        `;
+      }
+      btnWrap.classList.add('hidden');
+    }
+
+    function cpSelectSalary(key, value, el) {
+      cpState[key] = value;
+      const cls = key === 'salary1' ? '.co-sal1' : '.co-sal2';
+      document.querySelectorAll(cls).forEach(b => b.classList.remove('calc-selected'));
+      el.classList.add('calc-selected');
+
+      const pension = cpState.pension;
+      if (pension === 'both') {
+        if (cpState.salary1 && cpState.salary2) {
+          document.getElementById('cp-q4-btn').classList.remove('hidden');
+        }
+      } else {
+        if (cpState.salary1) {
+          document.getElementById('cp-q4-btn').classList.remove('hidden');
+        }
+      }
+    }
+
+    function cpShowResults() {
+      ['cs-intro','cs-q1','cs-q2','cs-q3','cs-q4'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById('cp-progress').classList.add('hidden');
+      document.getElementById('cp-back').classList.add('hidden');
+
+      const kids = parseInt(cpState.kids) || 0;
+      const age = cpState.age || 'mid';
+      const pension = cpState.pension || 'none';
+      const salary1 = cpState.salary1 || 'mid';
+      const salary2 = cpState.salary2 || null;
+
+      // Kids savings potential
+      const ageMultiplier = { young: 1.3, mid: 1.0, old: 0.6 };
+      const baseKidGain = 47500;
+      const kidTotal = kids > 0 ? Math.round(kids * baseKidGain * (ageMultiplier[age] || 1)) : 0;
+
+      // Pension potential
+      const salaryMap = { low: 250000, mid: 450000, high: 650000, vhigh: 900000 };
+      let pensionTotal = 0;
+      if (pension === 'both') {
+        pensionTotal = (salaryMap[salary1] || 450000) + (salaryMap[salary2] || 450000);
+      } else if (pension === 'one') {
+        pensionTotal = salaryMap[salary1] || 450000;
+      }
+
+      const total = kidTotal + pensionTotal;
+
+      // Build breakdown
+      const breakdown = document.getElementById('cp-breakdown');
+      breakdown.innerHTML = '';
+
+      if (kidTotal > 0) {
+        breakdown.innerHTML += `
+          <div class="flex items-center justify-between bg-soft rounded-xl px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-accent/10 rounded-lg flex items-center justify-center"><i data-lucide="baby" class="w-4 h-4 text-accent"></i></div>
+              <div>
+                <p class="text-sm font-medium text-navy">חיסכון לכל ילד</p>
+                <p class="text-xs text-muted">${kids} ${kids === 1 ? 'ילד' : 'ילדים'}</p>
+              </div>
+            </div>
+            <p class="text-lg font-bold text-accent">+₪${kidTotal.toLocaleString('he-IL')}</p>
+          </div>
+        `;
+      }
+
+      if (pensionTotal > 0) {
+        const pensionLabel = pension === 'both' ? 'שני בני זוג' : 'בן/בת זוג אחד/ת';
+        breakdown.innerHTML += `
+          <div class="flex items-center justify-between bg-soft rounded-xl px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-accent/10 rounded-lg flex items-center justify-center"><i data-lucide="building-2" class="w-4 h-4 text-accent"></i></div>
+              <div>
+                <p class="text-sm font-medium text-navy">סדר פנסיוני</p>
+                <p class="text-xs text-muted">${pensionLabel}</p>
+              </div>
+            </div>
+            <p class="text-lg font-bold text-accent">+₪${pensionTotal.toLocaleString('he-IL')}</p>
+          </div>
+        `;
+      }
+
+      // Animate total
+      const totalEl = document.getElementById('cp-total');
+      const dur = 1500;
+      const s = Date.now();
+      const tickTotal = () => {
+        const elapsed = Date.now() - s;
+        const progress = Math.min(elapsed / dur, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        totalEl.textContent = '₪' + Math.round(total * eased).toLocaleString('he-IL');
+        if (progress < 1) requestAnimationFrame(tickTotal);
+      };
+      tickTotal();
+
+      document.getElementById('cs-results').classList.remove('hidden');
+
+      // Re-render lucide icons in results
+      try { lucide.createIcons(); } catch(e) {}
+    }
+
+    function cpReset() {
+      cpState.kids = null;
+      cpState.age = null;
+      cpState.pension = null;
+      cpState.salary1 = null;
+      cpState.salary2 = null;
+      cpState.history = ['intro'];
+
+      // Clear all selections
+      document.querySelectorAll('.calc-opt').forEach(b => b.classList.remove('calc-selected'));
+
+      showStep('intro');
+    }
+
+    // ─── Calendly init ───
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof Calendly !== 'undefined') {
+        try {
+          Calendly.initInlineWidget({
+            url: 'https://calendly.com/ronen6213/45min',
+            parentElement: document.querySelector('.calendly-inline-widget')
+          });
+        } catch(e) {}
+      }
+    });
+  </script>
+</body>
+</html>
