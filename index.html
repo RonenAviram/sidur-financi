@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>סידור פיננסי | ליווי טכני ממוקד למשפחות</title>
+  <meta name="description" content="ליווי טכני ממוקד לסידור הפנסיה ואופטימיזציה של החיסכון המשפחתי. פגישת זום אחת של 45 דקות." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Heebo', sans-serif; }
+    html { scroll-behavior: smooth; }
+    .fade-in { opacity: 1; transform: none; }
+    .fade-in.animated { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+    .fade-in.animated.visible { opacity: 1; transform: translateY(0); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    #about-drawer { transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+    #about-drawer.open { transform: translateX(0); }
+    #about-overlay { opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
+    #about-overlay.open { opacity: 1; pointer-events: auto; }
+    .calc-opt {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      font-family: 'Heebo', sans-serif;
+      width: 100%;
+    }
+    .calc-opt:hover { border-color: #3b6eb5; background: rgba(59,110,181,0.05); }
+    .calc-opt.calc-selected { border-color: #3b6eb5; background: rgba(59,110,181,0.1); color: #3b6eb5; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { DEFAULT: '#0f1b2d', mid: '#1a2b45' },
+            accent: '#3b6eb5',
+            soft: '#f4f5f7',
+            muted: '#6b7b8d',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white text-navy antialiased">
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav id="navbar" class="fixed top-0 right-0 left-0 z-40 transition-all duration-300">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-5 py-4">
+      <span id="nav-logo" class="text-lg md:text-xl font-bold tracking-tight text-white transition-colors">סידור פיננסי</span>
+      <!-- Desktop -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#services" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">השירות</a>
+        <a href="#math" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">המספרים</a>
+        <a href="#checklist" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">הכנה</a>
+        <a href="#testimonials" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">המלצות</a>
+        <a href="#faq" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">שאלות</a>
+        <a href="#calculator" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">מחשבון רווח</a>
+        <button onclick="openAbout()" class="nav-link text-sm font-medium text-white/80 hover:text-accent transition-colors">מי אני</button>
+        <a href="#miluim" class="bg-[#e8b228] hover:bg-[#d4a01e] text-navy text-sm font-bold px-5 py-2.5 rounded-lg transition-colors animate-pulse hover:animate-none">בא לי הנחה</a>
+        <a href="#booking" class="bg-accent hover:bg-[#2d5a9e] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">תיאום פגישה</a>
+      </div>
+      <!-- Mobile -->
+      <button id="menu-btn" class="md:hidden text-white" aria-label="פתח תפריט">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav Overlay -->
+  <div id="mobile-nav" class="fixed inset-0 z-50 bg-navy/95 backdrop-blur-sm hidden flex-col items-center justify-center gap-6">
+    <button id="close-nav" class="absolute top-5 left-5 text-white"><i data-lucide="x" class="w-7 h-7"></i></button>
+    <a href="#services" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">השירות</a>
+    <a href="#math" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">המספרים</a>
+    <a href="#checklist" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">הכנה לפגישה</a>
+    <a href="#testimonials" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">המלצות</a>
+    <a href="#faq" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">שאלות</a>
+    <a href="#calculator" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">מחשבון רווח</a>
+    <button onclick="openAboutFromMobile()" class="mobile-link text-white text-xl font-light hover:text-accent transition-colors">מי אני</button>
+    <a href="#miluim" class="mobile-link bg-[#e8b228] text-navy px-8 py-3 rounded-lg text-lg font-bold">בא לי הנחה</a>
+    <a href="#booking" class="mobile-link mt-2 bg-accent text-white px-8 py-3 rounded-lg text-lg font-medium">לתיאום פגישה</a>
+  </div>
+
+  <!-- ═══ 1. HERO ═══ -->
+  <section class="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-navy via-navy-mid to-navy overflow-hidden">
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image:linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);background-size:60px 60px"></div>
+    <div class="relative z-10 max-w-4xl mx-auto px-5 text-center py-32 md:py-0">
+      <div class="fade-in inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 text-xs md:text-sm font-medium px-4 py-2 rounded-full mb-8">
+        <span>ליווי טכני ממוקד · פגישת זום אחת</span>
+      </div>
+      <h1 class="fade-in text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+        פגישת עבודה של 45 דקות<br>
+        <span class="text-accent">ששווה למשפחה שלכם</span><br>
+        <span class="text-accent">מאות אלפי שקלים בעתיד</span>
+      </h1>
+      <p class="fade-in text-base sm:text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-10">
+        בלי ללמוד את השוק ובלי בירוקרטיה.<br class="hidden sm:block">
+        ליווי טכני ממוקד לסידור הפנסיה ואופטימיזציה של החיסכון המשפחתי, בלחיצת כפתור.
+      </p>
+      <div class="fade-in">
+        <a href="#booking" class="group inline-flex items-center gap-2 bg-accent hover:bg-[#2d5a9e] text-white text-base md:text-lg font-semibold px-8 md:px-10 py-4 md:py-5 rounded-xl transition-all duration-300 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:-translate-y-0.5">
+          תיאום פגישה ממוקדת
+          <i data-lucide="calendar-check" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+        </a>
+      </div>
+      <a href="#services" class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/30 animate-bounce">
+        <i data-lucide="arrow-down" class="w-6 h-6"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══ 2. SERVICES (moved above math) ═══ -->
+  <section id="services" class="py-20 md:py-28 bg-white">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="fade-in text-center mb-14">
+        <p class="text-accent font-semibold text-sm mb-3">מה עושים בפגישה</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">שני מוקדי טיפול, פגישה אחת</h2>
+        <p class="text-muted max-w-lg mx-auto text-sm md:text-base">ב-45 דקות אנחנו ממפים, מסדרים ומבצעים – הכל ביחד, בשיתוף מסך.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-3xl mx-auto">
+        <!-- Card 1 -->
+        <div class="fade-in group bg-soft hover:bg-navy rounded-2xl p-7 md:p-9 transition-all duration-500 cursor-default border border-transparent hover:border-navy-mid">
+          <div class="w-12 h-12 bg-accent/10 group-hover:bg-accent/20 rounded-xl flex items-center justify-center mb-5 transition-colors">
+            <i data-lucide="baby" class="w-6 h-6 text-accent"></i>
+          </div>
+          <h3 class="text-lg md:text-xl font-bold mb-3 group-hover:text-white transition-colors">חיסכון לכל ילד</h3>
+          <ul class="space-y-2.5 text-sm text-muted group-hover:text-white/70 transition-colors">
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>מיפוי המסלול הנוכחי וזיהוי תשואה נמוכה</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>ביצוע העברת מסלול למסלול מנייתי/מותאם</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>אופטימיזציה של דמי ניהול</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>ביצוע הפעולות יחד בזמן אמת מול האתר</span></li>
+          </ul>
+        </div>
+        <!-- Card 2 -->
+        <div class="fade-in group bg-soft hover:bg-navy rounded-2xl p-7 md:p-9 transition-all duration-500 cursor-default border border-transparent hover:border-navy-mid">
+          <div class="w-12 h-12 bg-accent/10 group-hover:bg-accent/20 rounded-xl flex items-center justify-center mb-5 transition-colors">
+            <i data-lucide="building-2" class="w-6 h-6 text-accent"></i>
+          </div>
+          <h3 class="text-lg md:text-xl font-bold mb-3 group-hover:text-white transition-colors">סדר ואיחוד פנסיוני</h3>
+          <ul class="space-y-2.5 text-sm text-muted group-hover:text-white/70 transition-colors">
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>ניתוח דו״ח מסלקה פנסיונית ומיפוי כל הקופות</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>זיהוי קופות רדומות וכספים ״שנשכחו״</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>איחוד קופות וצמצום דמי ניהול מיותרים</span></li>
+            <li class="flex items-start gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-accent flex-shrink-0 mt-0.5"></i><span>התאמת מסלול השקעה לפרופיל האישי</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 3. THE MATH (two sub-areas) ═══ -->
+  <section id="math" class="py-20 md:py-28 bg-soft">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="fade-in text-center mb-16">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">המספרים מדברים בעד עצמם</h2>
+        <p class="text-muted max-w-2xl mx-auto text-sm md:text-base">שני תחומים, אותה פגישה. הנה ההשפעה הכלכלית של כל אחד מהם.</p>
+      </div>
+
+      <!-- ── SUB-AREA 1: חיסכון לכל ילד ── -->
+      <div class="mb-20">
+        <div class="fade-in flex items-center gap-3 mb-8 max-w-3xl mx-auto">
+          <div class="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0"><i data-lucide="baby" class="w-5 h-5 text-accent"></i></div>
+          <div>
+            <h3 class="text-lg md:text-xl font-bold">חיסכון לכל ילד</h3>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-3xl mx-auto">
+          <div class="fade-in bg-white rounded-2xl p-6 md:p-8 border border-gray-200 relative">
+            <div class="absolute top-4 left-4 bg-gray-100 text-muted text-xs font-medium px-3 py-1 rounded-full">לפני שינוי</div>
+            <div class="mb-6 mt-4">
+              <p class="text-muted text-sm mb-1">מסלול בסיסי (לפני שינוי)</p>
+              <p class="text-muted text-xs">תשואה שנתית ממוצעת: 3%</p>
+            </div>
+            <div class="text-3xl md:text-4xl font-bold text-muted counter" data-target="17500">₪0</div>
+            <p class="text-xs text-muted mt-2">סה״כ אחרי 21 שנה</p>
+            <div class="mt-6 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gray-300 rounded-full" style="width:27%"></div></div>
+          </div>
+          <div class="fade-in bg-navy rounded-2xl p-6 md:p-8 relative shadow-xl">
+            <div class="absolute top-4 left-4 bg-accent text-white text-xs font-medium px-3 py-1 rounded-full">מסלול מנייתי</div>
+            <div class="mb-6 mt-4">
+              <p class="text-white/80 text-sm mb-1">מסלול מותאם (אחרי שינוי)</p>
+              <p class="text-white/50 text-xs">תשואה שנתית ממוצעת: 8%</p>
+            </div>
+            <div class="text-3xl md:text-4xl font-bold text-white counter" data-target="65000">₪0</div>
+            <p class="text-xs text-white/50 mt-2">סה״כ אחרי 21 שנה</p>
+            <div class="mt-6 h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="fade-in text-center mt-8">
+          <div class="inline-flex items-center gap-3 bg-white border border-accent/20 rounded-xl px-6 py-4 shadow-sm">
+            <i data-lucide="trending-up" class="w-6 h-6 text-accent flex-shrink-0"></i>
+            <p class="text-sm md:text-base font-semibold">הפרש פוטנציאלי: <span class="text-accent counter-inline" data-target="47500">+₪0</span> לכל ילד</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUB-AREA 2: פנסיה ── -->
+      <div>
+        <div class="fade-in flex items-center gap-3 mb-8 max-w-3xl mx-auto">
+          <div class="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0"><i data-lucide="building-2" class="w-5 h-5 text-accent"></i></div>
+          <div>
+            <h3 class="text-lg md:text-xl font-bold">סדר ואיחוד פנסיוני</h3>
+            <p class="text-muted text-xs md:text-sm">משכורת (לדוגמה) 12,000 ש״ח, הפרשה חודשית 2,100 ש״ח, לאורך 30 שנה</p>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-3xl mx-auto">
+          <div class="fade-in bg-white rounded-2xl p-6 md:p-8 border border-gray-200 relative">
+            <div class="absolute top-4 left-4 bg-gray-100 text-muted text-xs font-medium px-3 py-1 rounded-full">לפני שינוי</div>
+            <div class="mb-6 mt-4">
+              <p class="text-muted text-sm mb-1">דמי ניהול גבוהים + מסלול לא מותאם</p>
+              <p class="text-muted text-xs">1.5% דמי ניהול מצבירה · תשואה נמוכה</p>
+            </div>
+            <div class="text-3xl md:text-4xl font-bold text-muted counter" data-target="1200000">₪0</div>
+            <p class="text-xs text-muted mt-2">צבירה צפויה בגיל 65</p>
+            <div class="mt-6 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-gray-300 rounded-full" style="width:65%"></div></div>
+          </div>
+          <div class="fade-in bg-navy rounded-2xl p-6 md:p-8 relative shadow-xl">
+            <div class="absolute top-4 left-4 bg-accent text-white text-xs font-medium px-3 py-1 rounded-full">אחרי סידור</div>
+            <div class="mb-6 mt-4">
+              <p class="text-white/80 text-sm mb-1">דמי ניהול מופחתים + מסלול מותאם לגיל</p>
+              <p class="text-white/50 text-xs">0.3% דמי ניהול מצבירה · מסלול מותאם</p>
+            </div>
+            <div class="text-3xl md:text-4xl font-bold text-white counter" data-target="1850000">₪0</div>
+            <p class="text-xs text-white/50 mt-2">צבירה צפויה בגיל 65</p>
+            <div class="mt-6 h-2 bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="fade-in text-center mt-8">
+          <div class="inline-flex items-center gap-3 bg-white border border-accent/20 rounded-xl px-6 py-4 shadow-sm">
+            <i data-lucide="trending-up" class="w-6 h-6 text-accent flex-shrink-0"></i>
+            <p class="text-sm md:text-base font-semibold">הפרש פוטנציאלי: <span class="text-accent counter-inline" data-target="650000">+₪0</span></p>
+          </div>
+        </div>
+      </div>
+
+      <p class="fade-in text-muted text-xs mt-10 text-center">* הנתונים מבוססים על ממוצעים היסטוריים ואינם מהווים התחייבות לתשואה עתידית.</p>
+    </div>
+  </section>
+
+  <!-- ═══ 4. CHECKLIST ═══ -->
+  <section id="checklist" class="py-20 md:py-28 bg-soft">
+    <div class="max-w-4xl mx-auto px-5">
+      <div class="fade-in text-center mb-14">
+        <p class="text-accent font-semibold text-sm mb-3">לפני הפגישה</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">מדריך הכנה לפגישה</h2>
+        <p class="text-muted max-w-lg mx-auto text-sm md:text-base">שלושה דברים פשוטים שיבטיחו שנמקסם כל דקה מהפגישה שלנו.</p>
+      </div>
+      <div class="space-y-5 max-w-2xl mx-auto">
+        <!-- Step 1 -->
+        <div class="fade-in bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 flex gap-5">
+          <div class="flex-shrink-0"><div class="w-11 h-11 bg-accent text-white rounded-xl flex items-center justify-center font-bold text-sm">01</div></div>
+          <div>
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <i data-lucide="file-text" class="w-[18px] h-[18px] text-accent"></i>
+              <h3 class="font-bold text-base md:text-lg">דו״ח מסלקה פנסיונית</h3>
+              <span class="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">חובה</span>
+            </div>
+            <p class="text-muted text-sm leading-relaxed mb-3">הזמינו דו״ח מסלקה פנסיונית דרך אתר המסלקה הפנסיונית. עלות הדו״ח כ-20 ש״ח.</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-3">
+              <p class="text-amber-800 text-xs font-medium flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                הזמינו לפחות 3 שעות לפני הפגישה – הדו״ח צריך זמן להתעדכן.
+              </p>
+            </div>
+            <button onclick="openMslakaModal()" class="inline-flex items-center gap-2 bg-accent/10 hover:bg-accent/20 text-accent text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              מדריך הורדת הדו״ח ←
+            </button>
+          </div>
+        </div>
+        <!-- Step 2 -->
+        <div class="fade-in bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 flex gap-5">
+          <div class="flex-shrink-0"><div class="w-11 h-11 bg-accent text-white rounded-xl flex items-center justify-center font-bold text-sm">02</div></div>
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <i data-lucide="key-round" class="w-[18px] h-[18px] text-accent"></i>
+              <h3 class="font-bold text-base md:text-lg">גישה לאזור אישי – חיסכון לכל ילד</h3>
+            </div>
+            <p class="text-muted text-sm leading-relaxed">היכנסו לאתר החברה המנהלת את החיסכון (למשל: מנורה, הראל, מגדל, אלטשולר שחם) ובצעו שחזור סיסמה מראש. ודאו שאתם מצליחים להתחבר לאזור האישי לפני הפגישה.</p>
+          </div>
+        </div>
+        <!-- Step 3 -->
+        <div class="fade-in bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 flex gap-5">
+          <div class="flex-shrink-0"><div class="w-11 h-11 bg-accent text-white rounded-xl flex items-center justify-center font-bold text-sm">03</div></div>
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <i data-lucide="lock" class="w-[18px] h-[18px] text-accent"></i>
+              <h3 class="font-bold text-base md:text-lg">ריכוז סיסמאות</h3>
+            </div>
+            <p class="text-muted text-sm leading-relaxed">הכינו רשימה של שמות משתמש וסיסמאות לכל הגופים הפיננסיים הרלוונטיים – קופות גמל, קרנות פנסיה, וחיסכון לכל ילד. ככה לא נבזבז זמן יקר על שחזור סיסמאות בפגישה עצמה.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 5. TESTIMONIALS ═══ -->
+  <section id="testimonials" class="py-20 md:py-28 bg-white">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="fade-in text-center mb-14">
+        <p class="text-accent font-semibold text-sm mb-3">מה אומרים</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold">משפחות שכבר סידרו את זה</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- T1 -->
+        <div class="fade-in bg-soft rounded-2xl p-6 md:p-7 flex flex-col h-full">
+          <div class="flex gap-1 mb-4">
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-navy text-sm md:text-base leading-relaxed flex-1 mb-5">&ldquo;ב-20 דקות הוא עשה לי סדר וגיליתי 22 אלף שקל בקופות שממש שכחתי מהן. לא האמנתי שזה כל כך פשוט.&rdquo;</p>
+          <div class="border-t border-gray-200 pt-4"><p class="font-semibold text-sm">מיכל ר.</p><p class="text-muted text-xs">אמא לשלושה · מזכרת בתיה</p></div>
+        </div>
+        <!-- T2 -->
+        <div class="fade-in bg-soft rounded-2xl p-6 md:p-7 flex flex-col h-full">
+          <div class="flex gap-1 mb-4">
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-navy text-sm md:text-base leading-relaxed flex-1 mb-5">&ldquo;הייתי בטוח שהפנסיה שלי מסודרת. בפגישה אחת הבנתי שאני מפסיד עשרות אלפים על דמי ניהול מיותרים ומסלול שלא מתאים לגיל שלי.&rdquo;</p>
+          <div class="border-t border-gray-200 pt-4"><p class="font-semibold text-sm">יוסי כ.</p><p class="text-muted text-xs">עצמאי, בן 38 · כוכב יאיר</p></div>
+        </div>
+        <!-- T3 -->
+        <div class="fade-in bg-soft rounded-2xl p-6 md:p-7 flex flex-col h-full">
+          <div class="flex gap-1 mb-4">
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="w-4 h-4 text-amber-400 fill-amber-400" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-navy text-sm md:text-base leading-relaxed flex-1 mb-5">&ldquo;הילדים שלי היו במסלול הכי שמרני שיש. תוך 40 דקות העברנו למסלול מנייתי והפוטנציאל השתנה לגמרי. שווה כל שקל.&rdquo;</p>
+          <div class="border-t border-gray-200 pt-4"><p class="font-semibold text-sm">רונית ש.</p><p class="text-muted text-xs">אמא לשניים · ירושלים</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MILUIM DISCOUNT ═══ -->
+  <section id="miluim" class="py-16 md:py-20 bg-[#e8b228]">
+    <div class="max-w-3xl mx-auto px-5 text-center">
+      <div class="fade-in">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6">
+          <i data-lucide="heart-handshake" class="w-8 h-8 text-navy"></i>
+        </div>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-navy mb-5">מילואימניקים? מגיע לכם.</h2>
+        <p class="text-navy/80 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-8">
+          את או אתה מילואימניקים פעילים ממלחמת חרבות ברזל?
+          <br>
+          ספרו לי את זה במהלך הפגישה ותקבלו הנחה משמעותית במקום.
+        </p>
+        <a href="#booking" class="inline-block bg-navy hover:bg-navy-mid text-white font-semibold px-8 py-4 rounded-xl transition-colors text-sm md:text-base shadow-lg">
+          לקביעת פגישה
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 6. REFERRAL ═══ -->
+  <section class="py-20 md:py-28 bg-navy">
+    <div class="max-w-4xl mx-auto px-5">
+      <div class="fade-in bg-gradient-to-br from-navy-mid to-navy border border-white/10 rounded-3xl p-8 md:p-14 text-center">
+        <div class="inline-flex items-center gap-2 bg-accent/20 text-accent text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i>
+          <span>קבוצת רכישה</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">באים עם חברים? משלמים פחות.</h2>
+        <p class="text-white/60 max-w-lg mx-auto mb-8 text-sm md:text-base leading-relaxed">הביאו 3 חברים או בני משפחה ותיהנו מהנחה משמעותית.<br>במקום 2,500 ש״ח –</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          <div class="bg-white/5 border border-white/10 rounded-xl px-6 py-4 w-full sm:w-auto">
+            <p class="text-white/40 text-xs line-through mb-1">2,500 ש״ח לפגישה</p>
+            <p class="text-white text-2xl md:text-3xl font-bold">1,800 ש״ח</p>
+            <p class="text-accent text-xs font-medium mt-1">לכל משתתף בקבוצה</p>
+          </div>
+          <div class="text-white/30 hidden sm:block text-2xl">=</div>
+          <div class="bg-accent/10 border border-accent/20 rounded-xl px-6 py-4 w-full sm:w-auto">
+            <p class="text-accent text-xs font-medium mb-1">חיסכון של</p>
+            <p class="text-white text-2xl md:text-3xl font-bold">700 ש״ח</p>
+            <p class="text-white/40 text-xs mt-1">28% הנחה</p>
+          </div>
+        </div>
+        <a href="#booking" class="inline-block bg-white text-navy hover:bg-gray-100 font-semibold px-8 py-4 rounded-xl transition-colors text-sm md:text-base">רוצה לארגן קבוצה</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CALCULATOR ═══ -->
+  <section id="calculator" class="py-20 md:py-28 bg-white">
+    <div class="max-w-3xl mx-auto px-5">
+      <div class="fade-in text-center mb-12">
+        <p class="text-accent font-semibold text-sm mb-3">בדיקה חינמית</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">בדקו את פוטנציאל הרווח שלכם</h2>
+        <p class="text-muted max-w-lg mx-auto text-sm md:text-base">כמה שאלות קצרות. תוצאה אישית ומיידית.</p>
+      </div>
+      <div class="fade-in bg-soft rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100">
+
+        <!-- Progress bar -->
+        <div id="cp-progress" class="mb-8 hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span id="cp-step-label" class="text-xs font-medium text-muted"></span>
+          </div>
+          <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div id="cp-bar" class="h-full bg-accent rounded-full transition-all duration-500" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Intro -->
+        <div id="cs-intro">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="calculator" class="w-8 h-8 text-accent"></i>
+            </div>
+            <h3 class="text-xl md:text-2xl font-bold mb-3">כמה שווה הפגישה הזו למשפחה שלכם?</h3>
+            <p class="text-muted text-sm md:text-base mb-8 max-w-md mx-auto leading-relaxed">ענו על כמה שאלות קצרות וקבלו הערכה אישית של הפוטנציאל הפיננסי שלכם.</p>
+            <button onclick="cpGo('q1')" class="bg-accent hover:bg-[#2d5a9e] text-white font-semibold px-10 py-4 rounded-xl transition-colors text-base">
+              בואו נבדוק ←
+            </button>
+          </div>
+        </div>
+
+        <!-- Q1: Kids count -->
+        <div id="cs-q1" class="hidden">
+          <h3 class="text-xl md:text-2xl font-bold mb-2 text-center">כמה ילדים יש לכם בחיסכון לכל ילד?</h3>
+          <p class="text-muted text-sm text-center mb-8">ילדים שנולדו אחרי 2017 עם חיסכון ממשלתי פעיל</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="calc-opt co-kids" data-value="0" onclick="cpSelect('kids','0','q3')">
+              <span class="block text-2xl font-bold mb-1">0</span>
+              <span class="block text-sm text-muted">אין ילדים עם חיסכון</span>
+            </button>
+            <button class="calc-opt co-kids" data-value="1" onclick="cpSelect('kids','1','q2')">
+              <span class="block text-2xl font-bold mb-1">1</span>
+              <span class="block text-sm text-muted">ילד אחד</span>
+            </button>
+            <button class="calc-opt co-kids" data-value="2" onclick="cpSelect('kids','2','q2')">
+              <span class="block text-2xl font-bold mb-1">2</span>
+              <span class="block text-sm text-muted">שני ילדים</span>
+            </button>
+            <button class="calc-opt co-kids" data-value="3" onclick="cpSelect('kids','3','q2')">
+              <span class="block text-2xl font-bold mb-1">3+</span>
+              <span class="block text-sm text-muted">שלושה ומעלה</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Q2: Kids age -->
+        <div id="cs-q2" class="hidden">
+          <h3 class="text-xl md:text-2xl font-bold mb-2 text-center">מה גיל הילד הצעיר ביניהם?</h3>
+          <p class="text-muted text-sm text-center mb-8">ככל שגיל הילד צעיר יותר, פוטנציאל הרווח גבוה יותר</p>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="calc-opt co-age" data-value="young" onclick="cpSelect('age','young','q3')">
+              <span class="block text-2xl font-bold mb-1">0–6</span>
+              <span class="block text-sm text-muted">שנים</span>
+            </button>
+            <button class="calc-opt co-age" data-value="mid" onclick="cpSelect('age','mid','q3')">
+              <span class="block text-2xl font-bold mb-1">7–12</span>
+              <span class="block text-sm text-muted">שנים</span>
+            </button>
+            <button class="calc-opt co-age" data-value="old" onclick="cpSelect('age','old','q3')">
+              <span class="block text-2xl font-bold mb-1">13–17</span>
+              <span class="block text-sm text-muted">שנים</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Q3: Pension -->
+        <div id="cs-q3" class="hidden">
+          <h3 class="text-xl md:text-2xl font-bold mb-2 text-center">האם יש לכם פנסיה פעילה?</h3>
+          <p class="text-muted text-sm text-center mb-8">שכירים שמועברת להם פנסיה דרך המעסיק</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button class="calc-opt co-pension" data-value="both" onclick="cpSelect('pension','both','q4')">
+              <i data-lucide="users" class="w-6 h-6 text-accent mx-auto mb-2"></i>
+              <span class="block font-semibold">כן – שנינו</span>
+              <span class="block text-xs text-muted mt-1">שני בני הזוג שכירים</span>
+            </button>
+            <button class="calc-opt co-pension" data-value="one" onclick="cpSelect('pension','one','q4')">
+              <i data-lucide="user" class="w-6 h-6 text-accent mx-auto mb-2"></i>
+              <span class="block font-semibold">כן – אחד מאיתנו</span>
+              <span class="block text-xs text-muted mt-1">שכיר/ה אחד/ת בלבד</span>
+            </button>
+            <button class="calc-opt co-pension" data-value="none" onclick="cpSelect('pension','none','results')">
+              <i data-lucide="user-x" class="w-6 h-6 text-muted mx-auto mb-2"></i>
+              <span class="block font-semibold">לא</span>
+              <span class="block text-xs text-muted mt-1">עצמאים / ללא פנסיה</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Q4: Salary (dynamic) -->
+        <div id="cs-q4" class="hidden">
+          <div id="cp-salary-wrap"></div>
+          <div id="cp-q4-btn" class="hidden mt-8 text-center">
+            <button onclick="cpShowResults()" class="bg-accent hover:bg-[#2d5a9e] text-white font-semibold px-10 py-4 rounded-xl transition-colors">
+              לתוצאות ←
+            </button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="cs-results" class="hidden">
+          <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 bg-accent/10 text-accent text-xs font-semibold px-4 py-1.5 rounded-full mb-5">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+              <span>הפוטנציאל שלכם</span>
+            </div>
+            <div id="cp-total" class="text-5xl md:text-6xl font-bold text-navy mb-3 tabular-nums">₪0</div>
+            <p class="text-muted text-sm">פוטנציאל רווח כולל לאורך השנים</p>
+          </div>
+          <div id="cp-breakdown" class="space-y-3 mb-6"></div>
+          <p class="text-xs text-muted text-center mb-8">* הנתונים מבוססים על ממוצעים היסטוריים ואינם מהווים התחייבות לתשואה עתידית</p>
+          <div class="text-center">
+            <a href="#booking" class="inline-block bg-accent hover:bg-[#2d5a9e] text-white font-semibold px-10 py-4 rounded-xl transition-all duration-300 shadow-lg shadow-accent/25 hover:shadow-xl hover:-translate-y-0.5 text-base">
+              לקביעת פגישה וסידור הכל ←
+            </a>
+            <br>
+            <button onclick="cpReset()" class="text-muted text-sm hover:text-navy transition-colors mt-4 inline-block">
+              חישוב מחדש
+            </button>
+          </div>
+        </div>
+
+        <!-- Back button -->
+        <div id="cp-back" class="hidden mt-6 text-center">
+          <button onclick="cpBack()" class="text-muted text-sm hover:text-navy transition-colors flex items-center gap-1.5 mx-auto">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            חזרה לשאלה הקודמת
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 7. FAQ ═══ -->
+  <section id="faq" class="py-20 md:py-28 bg-soft">
+    <div class="max-w-2xl mx-auto px-5">
+      <div class="fade-in text-center mb-14">
+        <p class="text-accent font-semibold text-sm mb-3">שאלות נפוצות</p>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold">עוד כמה דברים שחשוב לדעת</h2>
+      </div>
+      <div class="fade-in bg-white rounded-2xl p-5 md:p-8 shadow-sm border border-gray-100">
+        <!-- FAQ Items -->
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-btn w-full flex items-center justify-between py-5 px-1 text-right focus:outline-none group">
+            <span class="text-base md:text-lg font-medium text-navy group-hover:text-accent transition-colors leading-relaxed">למה זה עולה 2,500 ש״ח?</span>
+            <span class="mr-4 flex-shrink-0 text-accent"><i data-lucide="chevron-down" class="w-5 h-5 faq-icon transition-transform duration-300"></i></span>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <p class="text-muted leading-relaxed px-1 pb-5 text-sm md:text-base">המחיר משקף את ההשפעה הכלכלית ארוכת הטווח. ליווי טכני של 45 דקות יכול לייצר פוטנציאל רווח עתידי של 50,000 עד 150,000 ש״ח לאורך שנים. זה לא "עוד הוצאה" – זו פעולה חד-פעמית עם החזר השקעה עצום.</p>
+          </div>
+        </div>
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-btn w-full flex items-center justify-between py-5 px-1 text-right focus:outline-none group">
+            <span class="text-base md:text-lg font-medium text-navy group-hover:text-accent transition-colors leading-relaxed">זה ייעוץ השקעות?</span>
+            <span class="mr-4 flex-shrink-0 text-accent"><i data-lucide="chevron-down" class="w-5 h-5 faq-icon transition-transform duration-300"></i></span>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <p class="text-muted leading-relaxed px-1 pb-5 text-sm md:text-base">לא. השירות הוא ליווי טכני בלבד – מיפוי נתונים, סידור פיננסי וביצוע פעולות מול הגופים הפיננסיים. אני לא מייעץ לגבי השקעות ולא ממליץ על מוצרים פיננסיים ספציפיים.</p>
+          </div>
+        </div>
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-btn w-full flex items-center justify-between py-5 px-1 text-right focus:outline-none group">
+            <span class="text-base md:text-lg font-medium text-navy group-hover:text-accent transition-colors leading-relaxed">מה קורה בפגישה בפועל?</span>
+            <span class="mr-4 flex-shrink-0 text-accent"><i data-lucide="chevron-down" class="w-5 h-5 faq-icon transition-transform duration-300"></i></span>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <p class="text-muted leading-relaxed px-1 pb-5 text-sm md:text-base">אנחנו נכנסים ביחד לאזורים האישיים שלכם, ממפים את המצב הקיים, מזהים הפסדים ומבצעים את השינויים יחד במקום – העברת מסלולים, איחוד קופות ואופטימיזציה של חיסכון לכל ילד.</p>
+          </div>
+        </div>
+        <div class="faq-item border-b border-gray-200">
+          <button class="faq-btn w-full flex items-center justify-between py-5 px-1 text-right focus:outline-none group">
+            <span class="text-base md:text-lg font-medium text-navy group-hover:text-accent transition-colors leading-relaxed">מה אם אין לי גישה לכל הקופות?</span>
+            <span class="mr-4 flex-shrink-0 text-accent"><i data-lucide="chevron-down" class="w-5 h-5 faq-icon transition-transform duration-300"></i></span>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <p class="text-muted leading-relaxed px-1 pb-5 text-sm md:text-base">זו בדיוק הסיבה שיש מדריך הכנה. אם תכינו את הדו״חות והסיסמאות מראש – נוכל למקסם את הזמן בפגישה. אם משהו חסר – נטפל בזה יחד.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-btn w-full flex items-center justify-between py-5 px-1 text-right focus:outline-none group">
+            <span class="text-base md:text-lg font-medium text-navy group-hover:text-accent transition-colors leading-relaxed">כמה זמן לוקח לראות תוצאות?</span>
+            <span class="mr-4 flex-shrink-0 text-accent"><i data-lucide="chevron-down" class="w-5 h-5 faq-icon transition-transform duration-300"></i></span>
+          </button>
+          <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+            <p class="text-muted leading-relaxed px-1 pb-5 text-sm md:text-base">השינויים מתבצעים בזמן אמת במהלך הפגישה עצמה. ההשפעה הכלכלית מצטברת לאורך השנים – ככל שמתחילים מוקדם יותר, הריבית דריבית עובדת חזק יותר.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 8. BOOKING / CTA ═══ -->
+  <section id="booking" class="py-20 md:py-28 bg-white">
+    <div class="max-w-3xl mx-auto px-5 text-center">
+      <div class="fade-in">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">מוכנים לסדר את זה?</h2>
+        <p class="text-muted max-w-lg mx-auto mb-10 text-sm md:text-base">בחרו מועד שנוח לכם. הפגישה תתקיים בזום, נמשכת 45 דקות, וביחד נסדר את הכל.</p>
+      </div>
+      <div class="fade-in rounded-2xl overflow-hidden mb-8" style="min-height:700px">
+        <div class="calendly-inline-widget" data-url="https://calendly.com/ronen_aviram/user_interview?hide_gdpr_banner=1" style="min-width:320px;height:700px;"></div>
+      </div>
+      <div class="fade-in flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted">
+        <div class="flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-accent"></i><span>ליווי טכני – יד ביד – עד שהכל מסודר</span></div>
+        <span class="hidden sm:block">·</span>
+        <div class="flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-accent"></i><span>45 דקות בזום</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DRAWER: מי אני ═══ -->
+  <div id="about-overlay" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onclick="closeAbout()"></div>
+  <div id="about-drawer" class="fixed top-0 right-0 h-full w-full sm:max-w-sm z-50 bg-navy flex flex-col shadow-2xl">
+    <!-- Close -->
+    <div class="flex justify-start p-5 flex-shrink-0">
+      <button onclick="closeAbout()" class="text-white/40 hover:text-white transition-colors">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <!-- Content -->
+    <div class="flex-1 overflow-y-auto flex flex-col">
+      <div class="w-full">
+        <img src="data:image/jpeg;base64,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" alt="רונן" class="w-full block">
+      </div>
+      <div class="px-8 pb-10 flex flex-col flex-1">
+      <div class="w-10 h-1 bg-accent rounded-full mt-8 mb-6"></div>
+      <p class="text-white/40 text-xs font-semibold tracking-widest mb-5">מי אני</p>
+      <h2 class="text-3xl font-bold text-white mb-6">רונן</h2>
+      <p class="text-white/75 text-base leading-relaxed mb-5">
+        בן 34, מילואימניק פעיל (מדי) ואבא ל-3.
+      </p>
+      <p class="text-white/65 text-base leading-relaxed">
+        אין בי שום דבר מיוחד, חוץ מזה שאני לא מסוגל לראות כל כך הרבה אנשים צעירים שהכסף שלהם נמצא ״על הרצפה״ והם רק צריכים להתכופף להרים אותו.
+      </p>
+      <div class="mt-auto pt-12">
+        <a href="#booking" onclick="closeAbout()" class="inline-flex items-center gap-2 bg-accent hover:bg-[#2d5a9e] text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm">
+          לתיאום פגישה
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </a>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: מדריך מסלקה ═══ -->
+  <div id="mslaka-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8" onclick="closeMslakaModal(event)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-start justify-between p-6 border-b border-gray-100 flex-shrink-0">
+        <div>
+          <h3 class="text-lg font-bold text-navy mb-0.5">מדריך הורדת דו״ח מסלקה פנסיונית</h3>
+          <p class="text-muted text-xs">12 שלבים · כ-5 דקות · עלות כ-20 ש״ח</p>
+        </div>
+        <button onclick="closeMslakaModal()" class="text-muted hover:text-navy transition-colors flex-shrink-0 mr-4 mt-0.5">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <!-- Steps -->
+      <div class="overflow-y-auto p-6 flex-1">
+        <a href="https://www.swiftness.co.il/" target="_blank" rel="noopener" class="flex items-center gap-2 bg-accent/10 hover:bg-accent/15 text-accent text-sm font-semibold px-4 py-3 rounded-xl transition-colors mb-5">
+          <i data-lucide="external-link" class="w-4 h-4 flex-shrink-0"></i>
+          לאתר המסלקה הפנסיונית ← swiftness.co.il
+        </a>
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+            <span class="text-sm text-navy leading-relaxed">נכנסים לאתר <strong>swiftness.co.il</strong></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+            <span class="text-sm text-navy leading-relaxed">לוחצים על <strong>כניסה לחשבון</strong></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+            <span class="text-sm text-navy leading-relaxed">בוחרים <strong>"חוסכים"</strong></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</span>
+            <span class="text-sm text-navy leading-relaxed">מתחברים עם <strong>מייל / SMS</strong></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">5</span>
+            <span class="text-sm text-navy leading-relaxed">מזינים פרטים אישיים <span class="text-muted">(אם נדרש)</span></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">6</span>
+            <span class="text-sm text-navy leading-relaxed">בוחרים <strong>"הגשת בקשה לקבלת מידע פנסיוני"</strong></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">7</span>
+            <div class="text-sm text-navy leading-relaxed">
+              <p class="mb-1">לשאלה <strong>"איזה מידע ברצונך לקבל?"</strong> בוחרים:</p>
+              <span class="inline-block bg-soft text-navy text-xs font-medium px-3 py-1 rounded-lg">כל החסכונות שלי בכל החברות</span>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">8</span>
+            <div class="text-sm text-navy leading-relaxed">
+              <p class="mb-1">לשאלה <strong>"באיזו תדירות?"</strong> בוחרים:</p>
+              <span class="inline-block bg-soft text-navy text-xs font-medium px-3 py-1 rounded-lg">חד פעמית</span>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">9</span>
+            <span class="text-sm text-navy leading-relaxed">עוברים לתשלום <span class="text-muted">(עלות כ-20 ש״ח)</span></span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">10</span>
+            <span class="text-sm text-navy leading-relaxed">משלמים</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">11</span>
+            <span class="text-sm text-navy leading-relaxed">ממתינים על המסך לאישור שהבקשה התקבלה</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">12</span>
+            <span class="text-sm text-navy leading-relaxed">הדו״ח יגיע למייל / SMS שלכם <strong>תוך כ-3 שעות</strong></span>
+          </li>
+        </ol>
+        <!-- Note -->
+        <div class="mt-5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <p class="text-amber-800 text-xs font-medium flex items-start gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+            יש לבצע את התהליך עבור <strong>כל אחד מבני הזוג בנפרד</strong>.
+          </p>
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="p-5 border-t border-gray-100 flex-shrink-0 text-center">
+        <button onclick="closeMslakaModal()" class="text-muted text-sm hover:text-navy transition-colors">סגירה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="bg-navy py-10 md:py-14">
+    <div class="max-w-5xl mx-auto px-5">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="text-center md:text-right">
+          <p class="text-white font-bold text-lg mb-1">סידור פיננסי</p>
+          <p class="text-white/40 text-xs">ליווי טכני ממוקד למשפחות</p>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="#services" class="text-white/50 hover:text-white text-xs transition-colors">השירות</a>
+          <a href="#math" class="text-white/50 hover:text-white text-xs transition-colors">המספרים</a>
+          <a href="#faq" class="text-white/50 hover:text-white text-xs transition-colors">שאלות נפוצות</a>
+        </div>
+      </div>
+      <div class="border-t border-white/10 mt-8 pt-8 text-center">
+        <p class="text-white/30 text-xs leading-relaxed max-w-2xl mx-auto">האתר והשירות אינם מהווים ייעוץ השקעות, ייעוץ פנסיוני או שיווק פנסיוני כהגדרתם בחוק. השירות מוגדר כליווי טכני בלבד הכולל מיפוי נתונים, סידור פיננסי וביצוע פעולות טכניות מול הגופים הפיננסיים. הנתונים המוצגים באתר מבוססים על ממוצעים היסטוריים ואינם מהווים התחייבות לתשואה עתידית.</p>
+        <p class="text-white/20 text-[10px] mt-4">&copy; 2026 כל הזכויות שמורות</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Init Lucide icons
+    try { lucide.createIcons(); } catch(e) { console.warn('Lucide failed:', e); }
+
+    // ─── Intersection Observer for fade-in (progressive enhancement) ───
+    // Elements are visible by default. Only add animation class if observer is supported.
+    try {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => entry.target.classList.add('visible'), i * 100);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.fade-in').forEach(el => {
+        el.classList.add('animated');
+        observer.observe(el);
+      });
+    } catch(e) { /* Observer not supported - content stays visible */ }
+
+    // ─── Navbar scroll effect ───
+    const nav = document.getElementById('navbar');
+    const logo = document.getElementById('nav-logo');
+    const navLinks = document.querySelectorAll('.nav-link');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
+        nav.classList.remove('bg-transparent');
+        logo.classList.replace('text-white', 'text-navy');
+        navLinks.forEach(l => { l.classList.remove('text-white/80'); l.classList.add('text-muted'); });
+        document.querySelector('#menu-btn i')?.setAttribute('class', 'w-6 h-6 text-navy');
+      } else {
+        nav.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
+        nav.classList.add('bg-transparent');
+        logo.classList.replace('text-navy', 'text-white');
+        navLinks.forEach(l => { l.classList.remove('text-muted'); l.classList.add('text-white/80'); });
+        document.querySelector('#menu-btn i')?.setAttribute('class', 'w-6 h-6 text-white');
+      }
+    }, { passive: true });
+
+    // ─── Mobile nav ───
+    document.getElementById('menu-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.remove('hidden');
+      document.getElementById('mobile-nav').classList.add('flex');
+    });
+    document.getElementById('close-nav').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('hidden');
+      document.getElementById('mobile-nav').classList.remove('flex');
+    });
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobile-nav').classList.add('hidden');
+        document.getElementById('mobile-nav').classList.remove('flex');
+      });
+    });
+
+    // ─── Counter animation ───
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target);
+          const isInline = el.classList.contains('counter-inline');
+          const duration = 2000;
+          const start = Date.now();
+          const tick = () => {
+            const elapsed = Date.now() - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(target * eased).toLocaleString('he-IL');
+            el.textContent = isInline ? `+₪${current}` : `₪${current}`;
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          tick();
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.counter, .counter-inline').forEach(el => counterObserver.observe(el));
+
+    // ─── DRAWER: מי אני ───
+    function openAbout() {
+      document.getElementById('about-drawer').classList.add('open');
+      document.getElementById('about-overlay').cl
