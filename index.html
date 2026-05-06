@@ -6,7 +6,7 @@
   <title>סידור פיננסי | ליווי טכני ממוקד למשפחות</title>
   <meta name="description" content="ליווי טכני ממוקד לסידור הפנסיה ואופטימיזציה של החיסכון המשפחתי. פגישת זום אחת של 45 דקות." />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,9 +15,8 @@
   <style>
     * { font-family: 'Heebo', sans-serif; }
     html { scroll-behavior: smooth; }
-    .fade-in { opacity: 1; transform: none; }
-    .fade-in.animated { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
-    .fade-in.animated.visible { opacity: 1; transform: translateY(0); }
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .animate-float { animation: float 3s ease-in-out infinite; }
     #about-drawer { transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
@@ -774,21 +773,28 @@
     // ─── Init Lucide icons ───
     try { lucide.createIcons(); } catch(e) { console.warn('Lucide failed:', e); }
 
-    // ─── Intersection Observer for fade-in (progressive enhancement) ───
-    try {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
-          if (entry.isIntersecting) {
-            setTimeout(() => entry.target.classList.add('visible'), i * 100);
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15 });
-      document.querySelectorAll('.fade-in').forEach(el => {
-        el.classList.add('animated');
-        observer.observe(el);
+    // ─── Fade-in on scroll ───
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          fadeObserver.unobserve(entry.target);
+        }
       });
-    } catch(e) { /* Observer not supported - content stays visible */ }
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-in').forEach(el => {
+      // If already in viewport, show immediately
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+      } else {
+        fadeObserver.observe(el);
+      }
+    });
+    // Safety net: show everything after 3 seconds
+    setTimeout(() => {
+      document.querySelectorAll('.fade-in:not(.visible)').forEach(el => el.classList.add('visible'));
+    }, 3000);
 
     // ─── Navbar scroll effect ───
     const nav = document.getElementById('navbar');
