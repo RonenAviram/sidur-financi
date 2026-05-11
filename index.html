@@ -72,9 +72,12 @@
         <a href="#booking" class="bg-accent hover:bg-[#2d5a9e] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">תיאום פגישה</a>
       </div>
       <!-- Mobile -->
-      <button id="menu-btn" class="md:hidden text-white" aria-label="פתח תפריט">
-        <i data-lucide="menu" class="w-6 h-6"></i>
-      </button>
+      <div class="md:hidden flex items-center gap-3">
+        <a id="mobile-cta" href="#booking" class="hidden bg-accent text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-300">קבעו פגישה</a>
+        <button id="menu-btn" class="text-white" aria-label="פתח תפריט">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -811,19 +814,16 @@
     const nav = document.getElementById('navbar');
     const logo = document.getElementById('nav-logo');
     const navLinks = document.querySelectorAll('.nav-link');
+    const mobileCta = document.getElementById('mobile-cta');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 40) {
-        nav.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
+        nav.classList.add('bg-navy/95', 'backdrop-blur-md', 'shadow-lg');
         nav.classList.remove('bg-transparent');
-        logo.classList.replace('text-white', 'text-navy');
-        navLinks.forEach(l => { l.classList.remove('text-white/80'); l.classList.add('text-muted'); });
-        document.querySelector('#menu-btn i')?.setAttribute('class', 'w-6 h-6 text-navy');
+        if (mobileCta) mobileCta.classList.remove('hidden');
       } else {
-        nav.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-sm');
+        nav.classList.remove('bg-navy/95', 'backdrop-blur-md', 'shadow-lg');
         nav.classList.add('bg-transparent');
-        logo.classList.replace('text-navy', 'text-white');
-        navLinks.forEach(l => { l.classList.remove('text-muted'); l.classList.add('text-white/80'); });
-        document.querySelector('#menu-btn i')?.setAttribute('class', 'w-6 h-6 text-white');
+        if (mobileCta) mobileCta.classList.add('hidden');
       }
     }, { passive: true });
 
@@ -1185,8 +1185,4 @@
             parentElement: document.querySelector('.calendly-inline-widget')
           });
         } catch(e) {}
-      }
-    });
-  </script>
-</body>
-</html>
+      
